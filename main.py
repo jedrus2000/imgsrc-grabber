@@ -42,6 +42,7 @@ def eval_js(val, variables):
 
 class ImgsrcParser:
 
+    valid_cmds = ['char', 'slice', 'ndex', 'document', "='"]
     photo_re = re.compile(r"id='prc' class='cur' src='(http://[^']+)'")
     photo_js_re = re.compile(r"var ((?:[a-z]+=[^;]*)+);", re.DOTALL)
     photo_result_re = re.compile(r"getElementById\('bip'\)\.src=([^;]+);")
@@ -129,6 +130,8 @@ class ImgsrcParser:
         answer = self.photo_result_re.search(body).group(1)
         variables = {'_url': self.photo_re.search(body).group(1)}
         for cmd in js:
+            if not any(s in cmd for s in self.valid_cmds):
+                continue
             name, val = cmd.split('=')
             val = val.replace('-', '+-').split('+')
             variables[name] = eval_js(val, variables)
